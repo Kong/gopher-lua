@@ -208,17 +208,34 @@ func (tb *LTable) RawSetString(key string, value LValue) {
 		tb.k2i = map[LValue]int{}
 	}
 
+	lkey := LString(key)
 	if value == LNil {
-		// TODO tb.keys and tb.k2i should also be removed
 		delete(tb.strdict, key)
+		tb.deleteKeyFromKeys(lkey)
+		delete(tb.k2i, lkey)
 	} else {
 		tb.strdict[key] = value
-		lkey := LString(key)
 		if _, ok := tb.k2i[lkey]; !ok {
 			tb.k2i[lkey] = len(tb.keys)
 			tb.keys = append(tb.keys, lkey)
 		}
 	}
+}
+
+func (tb *LTable) deleteKeyFromKeys(key LValue) {
+	idx, ok := tb.k2i[key]
+	if !ok {
+		return
+	}
+
+	lastIdx := len(tb.keys) - 1
+	if idx != lastIdx {
+		lastKey := tb.keys[lastIdx]
+		tb.keys[idx] = lastKey
+		tb.k2i[lastKey] = idx
+	}
+
+	tb.keys = tb.keys[:lastIdx]
 }
 
 // RawSetH sets a given LValue to a given index without the __newindex metamethod.
@@ -236,8 +253,9 @@ func (tb *LTable) RawSetH(key LValue, value LValue) {
 	}
 
 	if value == LNil {
-		// TODO tb.keys and tb.k2i should also be removed
 		delete(tb.dict, key)
+		tb.deleteKeyFromKeys(key)
+		delete(tb.k2i, key)
 	} else {
 		tb.dict[key] = value
 		if _, ok := tb.k2i[key]; !ok {

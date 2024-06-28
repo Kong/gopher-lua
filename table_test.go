@@ -231,3 +231,249 @@ func TestTableForEach(t *testing.T) {
 		}
 	})
 }
+
+func TestLTable_RawSetString(t *testing.T) {
+	type input struct {
+		key   string
+		value LValue
+	}
+
+	tests := []struct {
+		name                  string
+		input                 []input
+		strdictExpectedLength int
+		expectedKeys          []LValue
+	}{
+		{
+			name: "input received as expected",
+			input: []input{
+				{
+					key:   "a",
+					value: LString("a"),
+				},
+				{
+					key:   "b",
+					value: LString("b"),
+				},
+				{
+					key:   "c",
+					value: LString("c"),
+				},
+				{
+					key:   "d",
+					value: LString("d"),
+				},
+			},
+			strdictExpectedLength: 4,
+			expectedKeys: []LValue{
+				LString("a"), LString("b"), LString("c"), LString("d"),
+			},
+		},
+		{
+			name: "key removed from the middle",
+			input: []input{
+				{
+					key:   "a",
+					value: LString("a"),
+				},
+				{
+					key:   "b",
+					value: LString("b"),
+				},
+				{
+					key:   "c",
+					value: LString("c"),
+				},
+				{
+					key:   "d",
+					value: LString("d"),
+				},
+				{
+					key:   "c",
+					value: LNil,
+				},
+			},
+			strdictExpectedLength: 3,
+			expectedKeys: []LValue{
+				LString("a"), LString("b"), LString("d"),
+			},
+		},
+		{
+			name: "key removed from the end",
+			input: []input{
+				{
+					key:   "a",
+					value: LString("a"),
+				},
+				{
+					key:   "b",
+					value: LString("b"),
+				},
+				{
+					key:   "c",
+					value: LString("c"),
+				},
+				{
+					key:   "d",
+					value: LString("d"),
+				},
+				{
+					key:   "d",
+					value: LNil,
+				},
+			},
+			strdictExpectedLength: 3,
+			expectedKeys: []LValue{
+				LString("a"), LString("b"), LString("c"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tb := newLTable(0, 0)
+			for _, v := range tt.input {
+				tb.RawSetString(v.key, v.value)
+			}
+			if len(tb.strdict) != tt.strdictExpectedLength {
+				t.Error("Expected length", tt.strdictExpectedLength, "got", len(tb.strdict))
+			}
+
+			if len(tb.k2i) != tt.strdictExpectedLength {
+				t.Error("Expected length", tt.strdictExpectedLength, "got", len(tb.k2i))
+			}
+
+			if len(tb.keys) != tt.strdictExpectedLength {
+				t.Error("Expected length", tt.strdictExpectedLength, "got", len(tb.keys))
+			}
+
+			for i, v := range tb.keys {
+				if v != tt.expectedKeys[i] {
+					t.Error("Expected", tt.expectedKeys[i], "got", v)
+				}
+			}
+		})
+	}
+}
+
+func TestLTable_RawGetH(t *testing.T) {
+	type input struct {
+		key   LValue
+		value LValue
+	}
+
+	tests := []struct {
+		name                  string
+		input                 []input
+		strdictExpectedLength int
+		expectedKeys          []LValue
+	}{
+		{
+			name: "input received as expected",
+			input: []input{
+				{
+					key:   LString("a"),
+					value: LString("a"),
+				},
+				{
+					key:   LString("b"),
+					value: LString("b"),
+				},
+				{
+					key:   LString("c"),
+					value: LString("c"),
+				},
+				{
+					key:   LString("d"),
+					value: LString("d"),
+				},
+			},
+			strdictExpectedLength: 4,
+			expectedKeys: []LValue{
+				LString("a"), LString("b"), LString("c"), LString("d"),
+			},
+		},
+		{
+			name: "key removed from the middle, expect removal from keys and k2i",
+			input: []input{
+				{
+					key:   LString("a"),
+					value: LString("a"),
+				},
+				{
+					key:   LString("b"),
+					value: LString("b"),
+				},
+				{
+					key:   LString("c"),
+					value: LString("c"),
+				},
+				{
+					key:   LString("d"),
+					value: LString("d"),
+				},
+				{
+					key:   LString("c"),
+					value: LNil,
+				},
+			},
+			strdictExpectedLength: 3,
+			expectedKeys: []LValue{
+				LString("a"), LString("b"), LString("d"),
+			},
+		},
+		{
+			name: "key removed from the end, expect removal from keys and k2i",
+			input: []input{
+				{
+					key:   LString("a"),
+					value: LString("a"),
+				},
+				{
+					key:   LString("b"),
+					value: LString("b"),
+				},
+				{
+					key:   LString("c"),
+					value: LString("c"),
+				},
+				{
+					key:   LString("d"),
+					value: LString("d"),
+				},
+				{
+					key:   LString("d"),
+					value: LNil,
+				},
+			},
+			strdictExpectedLength: 3,
+			expectedKeys: []LValue{
+				LString("a"), LString("b"), LString("c"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tb := newLTable(0, 0)
+			for _, v := range tt.input {
+				tb.RawSetH(v.key, v.value)
+			}
+			if len(tb.strdict) != tt.strdictExpectedLength {
+				t.Error("Expected length", tt.strdictExpectedLength, "got", len(tb.strdict))
+			}
+
+			if len(tb.k2i) != tt.strdictExpectedLength {
+				t.Error("Expected length", tt.strdictExpectedLength, "got", len(tb.k2i))
+			}
+
+			if len(tb.keys) != tt.strdictExpectedLength {
+				t.Error("Expected length", tt.strdictExpectedLength, "got", len(tb.keys))
+			}
+
+			for i, v := range tb.keys {
+				if v != tt.expectedKeys[i] {
+					t.Error("Expected", tt.expectedKeys[i], "got", v)
+				}
+			}
+		})
+	}
+}
