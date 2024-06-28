@@ -270,7 +270,7 @@ func TestLTable_RawSetString(t *testing.T) {
 			},
 		},
 		{
-			name: "key removed from the middle",
+			name: "key removed from the middle, expect removal from keys and k2i",
 			input: []input{
 				{
 					key:   "a",
@@ -299,7 +299,7 @@ func TestLTable_RawSetString(t *testing.T) {
 			},
 		},
 		{
-			name: "key removed from the end",
+			name: "key removed from the end, expect removal from keys and k2i",
 			input: []input{
 				{
 					key:   "a",
